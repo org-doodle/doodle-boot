@@ -14,5 +14,7 @@
   <packaging>pom</packaging>
   <modules>
     <module>doodle-boot-bom</module>
+    <module>doodle-boot-core</module>
+    <module>doodle-starter-boot</module>
   </modules>
 </project>
