@@ -30,7 +30,7 @@
       </dependency>
       <dependency>
         <groupId>org.doodle</groupId>
-        <artifactId>doodle-boot-messaging</artifactId>
+        <artifactId>doodle-boot-core</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>

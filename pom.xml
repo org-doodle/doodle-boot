@@ -15,7 +15,7 @@
   <modules>
     <module>doodle-boot-autoconfigure</module>
     <module>doodle-boot-bom</module>
-    <module>doodle-boot-messaging</module>
+    <module>doodle-boot-core</module>
     <module>doodle-starter-boot</module>
   </modules>
 </project>

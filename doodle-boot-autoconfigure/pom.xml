@@ -21,6 +21,10 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
+      <groupId>org.doodle</groupId>
+      <artifactId>doodle-boot-core</artifactId>
+    </dependency>
+    <dependency>
       <groupId>com.google.protobuf</groupId>
       <artifactId>protobuf-java</artifactId>
       <optional>true</optional>
