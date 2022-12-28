@@ -13,27 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.doodle.boot.rsocket.config;
+package org.doodle.boot.autoconfigure.http;
 
 import com.google.protobuf.Message;
+import io.netty.handler.codec.protobuf.ProtobufDecoder;
+import io.netty.handler.codec.protobuf.ProtobufEncoder;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.rsocket.messaging.RSocketStrategiesCustomizer;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.context.annotation.Bean;
-import org.springframework.http.codec.protobuf.ProtobufDecoder;
-import org.springframework.http.codec.protobuf.ProtobufEncoder;
+import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.converter.protobuf.ProtobufHttpMessageConverter;
 
 @SuppressWarnings("unused")
 @AutoConfiguration(
     before =
-        org.springframework.boot.autoconfigure.rsocket.RSocketStrategiesAutoConfiguration.class)
+        org.springframework.boot.autoconfigure.http.HttpMessageConvertersAutoConfiguration.class)
 @ConditionalOnClass({Message.class, ProtobufEncoder.class, ProtobufDecoder.class})
-public class RSocketStrategiesAutoConfiguration {
+@ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
+public class HttpMessageConvertersAutoConfiguration {
 
   @Bean
   @ConditionalOnMissingBean
-  public RSocketStrategiesCustomizer protobufRSocketStrategiesCustomizer() {
-    return (builder) -> builder.encoder(new ProtobufEncoder()).decoder(new ProtobufDecoder());
+  public HttpMessageConverter<Message> protobufHttpMessageConverter() {
+    return new ProtobufHttpMessageConverter();
   }
 }

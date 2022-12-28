@@ -25,7 +25,12 @@
       </dependency>
       <dependency>
         <groupId>org.doodle</groupId>
-        <artifactId>doodle-boot-core</artifactId>
+        <artifactId>doodle-boot-autoconfigure</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.doodle</groupId>
+        <artifactId>doodle-boot-messaging</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>

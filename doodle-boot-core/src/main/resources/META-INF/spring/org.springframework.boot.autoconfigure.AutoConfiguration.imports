@@ -1,2 +1,0 @@
-org.doodle.boot.http.config.HttpMessageConvertersAutoConfiguration
-org.doodle.boot.rsocket.config.RSocketStrategiesAutoConfiguration
