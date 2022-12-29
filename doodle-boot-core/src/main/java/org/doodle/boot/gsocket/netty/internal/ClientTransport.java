@@ -15,33 +15,10 @@
  */
 package org.doodle.boot.gsocket.netty.internal;
 
-import java.util.Objects;
+import reactor.core.publisher.Mono;
 import reactor.netty.Connection;
 
-public abstract class BaseDuplexConnection implements DuplexConnection {
+public interface ClientTransport {
 
-  private final Connection connection;
-
-  public BaseDuplexConnection(Connection connection) {
-    this.connection = Objects.requireNonNull(connection);
-    this.connection
-        .channel()
-        .closeFuture()
-        .addListener(
-            future -> {
-              if (!isDisposed()) {
-                dispose();
-              }
-            });
-  }
-
-  @Override
-  public void dispose() {
-    connection.dispose();
-  }
-
-  @Override
-  public boolean isDisposed() {
-    return this.connection.isDisposed();
-  }
+  Mono<? extends Connection> connect();
 }

@@ -15,11 +15,15 @@
  */
 package org.doodle.boot.gsocket.netty.internal;
 
-import reactor.netty.Connection;
+import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 
-public class WebSocketDuplexConnection extends BaseDuplexConnection {
+public class GSocketLengthCodec extends LengthFieldBasedFrameDecoder {
 
-  public WebSocketDuplexConnection(Connection connection) {
-    super(connection);
+  public GSocketLengthCodec() {
+    this(GSocketFrameCodec.FRAME_LENGTH_MASK);
+  }
+
+  public GSocketLengthCodec(int maxFrameLength) {
+    super(maxFrameLength, 0, GSocketFrameCodec.FRAME_LENGTH_SIZE, 0, 0);
   }
 }

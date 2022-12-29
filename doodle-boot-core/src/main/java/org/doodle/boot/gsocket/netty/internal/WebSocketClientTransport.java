@@ -17,34 +17,34 @@ package org.doodle.boot.gsocket.netty.internal;
 
 import io.netty.handler.codec.http.DefaultHttpHeaders;
 import io.netty.handler.codec.http.HttpHeaders;
+import java.util.Objects;
 import reactor.core.publisher.Mono;
 import reactor.netty.Connection;
-import reactor.netty.DisposableServer;
-import reactor.netty.http.server.HttpServer;
+import reactor.netty.http.client.HttpClient;
+import reactor.netty.http.client.WebsocketClientSpec;
 
-public class WebSocketServerTransport implements ServerTransport {
-  private final HttpServer httpServer;
+public class WebSocketClientTransport implements ClientTransport {
+
+  private final HttpClient httpClient;
 
   private HttpHeaders httpHeaders = new DefaultHttpHeaders();
 
-  public static WebSocketServerTransport create(HttpServer httpServer) {
-    return new WebSocketServerTransport(httpServer);
+  private final WebsocketClientSpec.Builder specBuilder =
+      WebsocketClientSpec.builder().maxFramePayloadLength(GSocketFrameCodec.FRAME_LENGTH_MASK);
+
+  public static WebSocketClientTransport create(HttpClient httpClient) {
+    return new WebSocketClientTransport(httpClient);
   }
 
-  private WebSocketServerTransport(HttpServer httpServer) {
-    this.httpServer = httpServer;
+  private WebSocketClientTransport(HttpClient httpClient) {
+    this.httpClient = Objects.requireNonNull(httpClient);
   }
 
   @Override
-  public Mono<? extends DisposableServer> start(ConnectionAcceptor acceptor) {
-    return httpServer
-        .handle(
-            (request, response) -> {
-              response.headers(httpHeaders);
-              return response.sendWebsocket(
-                  (inbound, outbound) ->
-                      acceptor.apply((Connection) inbound).then(outbound.neverComplete()));
-            })
-        .bind();
+  public Mono<? extends Connection> connect() {
+    return this.httpClient
+        .headers(headers -> headers.add(this.httpHeaders))
+        .websocket(specBuilder.build())
+        .connect();
   }
 }

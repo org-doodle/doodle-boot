@@ -15,6 +15,25 @@
  */
 package org.doodle.boot.gsocket.netty.internal;
 
-import reactor.core.Disposable;
+import java.util.Objects;
+import reactor.core.publisher.Mono;
+import reactor.netty.Connection;
+import reactor.netty.tcp.TcpClient;
 
-public interface DuplexConnection extends Disposable {}
+public class TcpClientTransport implements ClientTransport {
+
+  private final TcpClient tcpClient;
+
+  public static TcpClientTransport create(TcpClient tcpClient) {
+    return new TcpClientTransport(tcpClient);
+  }
+
+  private TcpClientTransport(TcpClient tcpClient) {
+    this.tcpClient = Objects.requireNonNull(tcpClient);
+  }
+
+  @Override
+  public Mono<? extends Connection> connect() {
+    return tcpClient.doOnConnected(c -> c.addHandlerLast(new GSocketLengthCodec())).connect();
+  }
+}

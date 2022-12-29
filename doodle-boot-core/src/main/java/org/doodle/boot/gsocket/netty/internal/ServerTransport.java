@@ -18,14 +18,15 @@ package org.doodle.boot.gsocket.netty.internal;
 import java.util.function.Function;
 import org.reactivestreams.Publisher;
 import reactor.core.publisher.Mono;
+import reactor.netty.Connection;
 import reactor.netty.DisposableServer;
 
 public interface ServerTransport {
 
   Mono<? extends DisposableServer> start(ConnectionAcceptor acceptor);
 
-  interface ConnectionAcceptor extends Function<DuplexConnection, Publisher<Void>> {
+  interface ConnectionAcceptor extends Function<Connection, Publisher<Void>> {
     @Override
-    Mono<Void> apply(DuplexConnection duplexConnection);
+    Mono<Void> apply(Connection connection);
   }
 }
