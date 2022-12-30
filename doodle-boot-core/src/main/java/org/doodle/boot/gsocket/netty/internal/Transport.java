@@ -15,10 +15,8 @@
  */
 package org.doodle.boot.gsocket.netty.internal;
 
-import reactor.core.publisher.Mono;
-import reactor.netty.Connection;
-
-public interface ClientTransport extends Transport {
-
-  Mono<? extends Connection> connect();
+public interface Transport {
+  default int maxFrameLength() {
+    return GSocketFrameCodec.FRAME_LENGTH_MASK;
+  }
 }

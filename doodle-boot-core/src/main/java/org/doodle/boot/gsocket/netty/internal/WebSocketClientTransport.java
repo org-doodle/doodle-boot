@@ -17,7 +17,9 @@ package org.doodle.boot.gsocket.netty.internal;
 
 import io.netty.handler.codec.http.DefaultHttpHeaders;
 import io.netty.handler.codec.http.HttpHeaders;
+import java.util.Arrays;
 import java.util.Objects;
+import java.util.function.Consumer;
 import reactor.core.publisher.Mono;
 import reactor.netty.Connection;
 import reactor.netty.http.client.HttpClient;
@@ -25,26 +27,49 @@ import reactor.netty.http.client.WebsocketClientSpec;
 
 public class WebSocketClientTransport implements ClientTransport {
 
-  private final HttpClient httpClient;
+  public static final String DEFAULT_PATH = "/";
 
-  private HttpHeaders httpHeaders = new DefaultHttpHeaders();
+  private final HttpClient httpClient;
+  private final String path;
+
+  private final HttpHeaders headers = new DefaultHttpHeaders();
 
   private final WebsocketClientSpec.Builder specBuilder =
       WebsocketClientSpec.builder().maxFramePayloadLength(GSocketFrameCodec.FRAME_LENGTH_MASK);
 
   public static WebSocketClientTransport create(HttpClient httpClient) {
-    return new WebSocketClientTransport(httpClient);
+    return new WebSocketClientTransport(httpClient, DEFAULT_PATH);
   }
 
-  private WebSocketClientTransport(HttpClient httpClient) {
+  private WebSocketClientTransport(HttpClient httpClient, String path) {
     this.httpClient = Objects.requireNonNull(httpClient);
+    Objects.requireNonNull(path);
+    this.path = path.startsWith("/") ? path : "/" + path;
+  }
+
+  public WebSocketClientTransport header(String name, String... values) {
+    if (values != null) {
+      Arrays.stream(values).forEach(value -> headers.add(name, value));
+    }
+    return this;
+  }
+
+  public WebSocketClientTransport webSocketSpec(Consumer<WebsocketClientSpec.Builder> configurer) {
+    configurer.accept(specBuilder);
+    return this;
+  }
+
+  @Override
+  public int maxFrameLength() {
+    return specBuilder.build().maxFramePayloadLength();
   }
 
   @Override
   public Mono<? extends Connection> connect() {
     return this.httpClient
-        .headers(headers -> headers.add(this.httpHeaders))
+        .headers(headers -> headers.add(this.headers))
         .websocket(specBuilder.build())
+        .uri(path)
         .connect();
   }
 }

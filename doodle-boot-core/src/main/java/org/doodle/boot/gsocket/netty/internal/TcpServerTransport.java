@@ -22,13 +22,20 @@ import reactor.netty.tcp.TcpServer;
 
 public class TcpServerTransport implements ServerTransport {
   private final TcpServer tcpServer;
+  private final int maxFrameLength;
 
   public static TcpServerTransport create(TcpServer tcpServer) {
-    return new TcpServerTransport(tcpServer);
+    return new TcpServerTransport(tcpServer, GSocketFrameCodec.FRAME_LENGTH_MASK);
   }
 
-  private TcpServerTransport(TcpServer tcpServer) {
+  private TcpServerTransport(TcpServer tcpServer, int maxFrameLength) {
     this.tcpServer = Objects.requireNonNull(tcpServer);
+    this.maxFrameLength = maxFrameLength;
+  }
+
+  @Override
+  public int maxFrameLength() {
+    return this.maxFrameLength;
   }
 
   @Override
@@ -36,7 +43,7 @@ public class TcpServerTransport implements ServerTransport {
     return tcpServer
         .doOnConnection(
             (c) -> {
-              c.addHandlerLast(new GSocketLengthCodec());
+              c.addHandlerLast(new GSocketLengthCodec(maxFrameLength));
               acceptor.apply(c).then(Mono.<Void>never()).subscribe(c.disposeSubscriber());
             })
         .bind();

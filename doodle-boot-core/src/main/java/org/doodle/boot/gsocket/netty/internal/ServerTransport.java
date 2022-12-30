@@ -21,7 +21,7 @@ import reactor.core.publisher.Mono;
 import reactor.netty.Connection;
 import reactor.netty.DisposableServer;
 
-public interface ServerTransport {
+public interface ServerTransport extends Transport {
 
   Mono<? extends DisposableServer> start(ConnectionAcceptor acceptor);
 

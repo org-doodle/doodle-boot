@@ -23,17 +23,26 @@ import reactor.netty.tcp.TcpClient;
 public class TcpClientTransport implements ClientTransport {
 
   private final TcpClient tcpClient;
+  private final int maxFrameLength;
 
   public static TcpClientTransport create(TcpClient tcpClient) {
-    return new TcpClientTransport(tcpClient);
+    return new TcpClientTransport(tcpClient, GSocketFrameCodec.FRAME_LENGTH_MASK);
   }
 
-  private TcpClientTransport(TcpClient tcpClient) {
+  private TcpClientTransport(TcpClient tcpClient, int maxFrameLength) {
     this.tcpClient = Objects.requireNonNull(tcpClient);
+    this.maxFrameLength = maxFrameLength;
+  }
+
+  @Override
+  public int maxFrameLength() {
+    return this.maxFrameLength;
   }
 
   @Override
   public Mono<? extends Connection> connect() {
-    return tcpClient.doOnConnected(c -> c.addHandlerLast(new GSocketLengthCodec())).connect();
+    return tcpClient
+        .doOnConnected(c -> c.addHandlerLast(new GSocketLengthCodec(maxFrameLength)))
+        .connect();
   }
 }

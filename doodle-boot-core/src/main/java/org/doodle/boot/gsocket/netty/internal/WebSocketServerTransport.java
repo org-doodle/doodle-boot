@@ -17,22 +17,32 @@ package org.doodle.boot.gsocket.netty.internal;
 
 import io.netty.handler.codec.http.DefaultHttpHeaders;
 import io.netty.handler.codec.http.HttpHeaders;
+import java.util.Arrays;
+import java.util.Objects;
 import reactor.core.publisher.Mono;
 import reactor.netty.Connection;
 import reactor.netty.DisposableServer;
 import reactor.netty.http.server.HttpServer;
 
-public class WebSocketServerTransport implements ServerTransport {
+public class WebSocketServerTransport extends BaseWebsocketServerTransport<WebSocketServerTransport>
+    implements ServerTransport {
   private final HttpServer httpServer;
 
-  private HttpHeaders httpHeaders = new DefaultHttpHeaders();
+  private final HttpHeaders headers = new DefaultHttpHeaders();
 
   public static WebSocketServerTransport create(HttpServer httpServer) {
     return new WebSocketServerTransport(httpServer);
   }
 
   private WebSocketServerTransport(HttpServer httpServer) {
-    this.httpServer = httpServer;
+    this.httpServer = serverConfigurer.apply(Objects.requireNonNull(httpServer));
+  }
+
+  public WebSocketServerTransport header(String name, String... values) {
+    if (values != null) {
+      Arrays.stream(values).forEach(value -> headers.add(name, value));
+    }
+    return this;
   }
 
   @Override
@@ -40,10 +50,11 @@ public class WebSocketServerTransport implements ServerTransport {
     return httpServer
         .handle(
             (request, response) -> {
-              response.headers(httpHeaders);
+              response.headers(headers);
               return response.sendWebsocket(
                   (inbound, outbound) ->
-                      acceptor.apply((Connection) inbound).then(outbound.neverComplete()));
+                      acceptor.apply((Connection) inbound).then(outbound.neverComplete()),
+                  specBuilder.build());
             })
         .bind();
   }
