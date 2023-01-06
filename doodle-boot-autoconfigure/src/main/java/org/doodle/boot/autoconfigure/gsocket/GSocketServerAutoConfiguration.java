@@ -19,12 +19,16 @@ import org.doodle.boot.gsocket.GSocketServerFactory;
 import org.doodle.boot.gsocket.context.GSocketServerBootstrap;
 import org.doodle.boot.gsocket.netty.NettyGSocketServerFactory;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.context.properties.PropertyMapper;
 import org.springframework.context.annotation.Bean;
+import reactor.netty.http.server.HttpServer;
+import reactor.netty.tcp.TcpServer;
 
 @AutoConfiguration
+@ConditionalOnClass({HttpServer.class, TcpServer.class})
 @EnableConfigurationProperties(GSocketProperties.class)
 public class GSocketServerAutoConfiguration {
 

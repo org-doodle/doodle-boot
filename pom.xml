@@ -17,5 +17,6 @@
     <module>doodle-boot-bom</module>
     <module>doodle-boot-core</module>
     <module>doodle-starter-boot</module>
+    <module>doodle-starter-gsocket</module>
   </modules>
 </project>

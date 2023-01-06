@@ -38,6 +38,11 @@
         <artifactId>doodle-starter-boot</artifactId>
         <version>${project.version}</version>
       </dependency>
+      <dependency>
+        <groupId>org.doodle</groupId>
+        <artifactId>doodle-starter-gsocket</artifactId>
+        <version>${project.version}</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 </project>
