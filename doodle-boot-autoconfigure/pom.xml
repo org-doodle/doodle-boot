@@ -25,11 +25,6 @@
       <artifactId>doodle-boot-core</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.doodle</groupId>
-      <artifactId>doodle-design-messaging</artifactId>
-      <optional>true</optional>
-    </dependency>
-    <dependency>
       <groupId>com.google.protobuf</groupId>
       <artifactId>protobuf-java</artifactId>
       <optional>true</optional>

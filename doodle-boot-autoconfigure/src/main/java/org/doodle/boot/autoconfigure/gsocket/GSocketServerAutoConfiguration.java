@@ -17,6 +17,7 @@ package org.doodle.boot.autoconfigure.gsocket;
 
 import org.doodle.boot.gsocket.GSocketServerFactory;
 import org.doodle.boot.gsocket.context.GSocketServerBootstrap;
+import org.doodle.boot.gsocket.messaging.GSocketMessageHandler;
 import org.doodle.boot.gsocket.netty.NettyGSocketServerFactory;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -45,7 +46,8 @@ public class GSocketServerAutoConfiguration {
 
   @Bean
   @ConditionalOnMissingBean
-  public GSocketServerBootstrap gSocketServerBootstrap(GSocketServerFactory serverFactory) {
+  public GSocketServerBootstrap gSocketServerBootstrap(
+      GSocketServerFactory serverFactory, GSocketMessageHandler messageHandler) {
     return new GSocketServerBootstrap(serverFactory, null);
   }
 }

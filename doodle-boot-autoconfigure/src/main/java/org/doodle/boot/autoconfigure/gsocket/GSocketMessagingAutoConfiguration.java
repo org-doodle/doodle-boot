@@ -15,7 +15,22 @@
  */
 package org.doodle.boot.autoconfigure.gsocket;
 
+import org.doodle.boot.gsocket.messaging.GSocketMessageHandler;
+import org.doodle.boot.gsocket.messaging.GSocketMessagingHandlerCustomizer;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.context.annotation.Bean;
 
 @AutoConfiguration
-public class GSocketMessagingAutoConfiguration {}
+public class GSocketMessagingAutoConfiguration {
+
+  @Bean
+  @ConditionalOnMissingBean
+  public GSocketMessageHandler gSocketMessageHandler(
+      ObjectProvider<GSocketMessagingHandlerCustomizer> customizers) {
+    GSocketMessageHandler messageHandler = new GSocketMessageHandler();
+    customizers.orderedStream().forEach(customizer -> customizer.customize(messageHandler));
+    return messageHandler;
+  }
+}
