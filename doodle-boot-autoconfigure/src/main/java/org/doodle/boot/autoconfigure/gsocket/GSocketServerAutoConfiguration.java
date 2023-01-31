@@ -27,7 +27,7 @@ import org.springframework.context.annotation.Bean;
 import reactor.netty.http.server.HttpServer;
 import reactor.netty.tcp.TcpServer;
 
-@AutoConfiguration
+@AutoConfiguration(after = GSocketMessagingAutoConfiguration.class)
 @ConditionalOnClass({HttpServer.class, TcpServer.class})
 @EnableConfigurationProperties(GSocketProperties.class)
 public class GSocketServerAutoConfiguration {
