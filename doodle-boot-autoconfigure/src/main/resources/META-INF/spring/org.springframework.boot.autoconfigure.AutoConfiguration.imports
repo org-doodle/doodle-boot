@@ -1,4 +1,5 @@
 org.doodle.boot.autoconfigure.http.HttpMessageConvertersAutoConfiguration
 org.doodle.boot.autoconfigure.rsocket.RSocketStrategiesAutoConfiguration
+org.doodle.boot.autoconfigure.gsocket.GSocketStrategiesAutoConfiguration
 org.doodle.boot.autoconfigure.gsocket.GSocketMessagingAutoConfiguration
 org.doodle.boot.autoconfigure.gsocket.GSocketServerAutoConfiguration

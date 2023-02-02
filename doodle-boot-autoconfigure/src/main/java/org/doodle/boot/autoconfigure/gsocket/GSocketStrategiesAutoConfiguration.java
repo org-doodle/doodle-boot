@@ -15,24 +15,23 @@
  */
 package org.doodle.boot.autoconfigure.gsocket;
 
-import org.doodle.boot.gsocket.messaging.GSocketMessageHandler;
-import org.doodle.boot.gsocket.messaging.GSocketMessageHandlerCustomizer;
 import org.doodle.boot.gsocket.messaging.GSocketStrategies;
+import org.doodle.boot.gsocket.messaging.GSocketStrategiesBuilder;
+import org.doodle.boot.gsocket.messaging.GSocketStrategiesBuilderCustomizer;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 
-@AutoConfiguration(after = GSocketStrategiesAutoConfiguration.class)
-public class GSocketMessagingAutoConfiguration {
+@AutoConfiguration
+public class GSocketStrategiesAutoConfiguration {
 
   @Bean
   @ConditionalOnMissingBean
-  public GSocketMessageHandler gSocketMessageHandler(
-      GSocketStrategies strategies, ObjectProvider<GSocketMessageHandlerCustomizer> customizers) {
-    GSocketMessageHandler messageHandler = new GSocketMessageHandler();
-    messageHandler.setStrategies(strategies);
-    customizers.orderedStream().forEach(customizer -> customizer.customize(messageHandler));
-    return messageHandler;
+  public GSocketStrategies gSocketStrategies(
+      ObjectProvider<GSocketStrategiesBuilderCustomizer> customizers) {
+    GSocketStrategiesBuilder builder = new GSocketStrategiesBuilder();
+    customizers.orderedStream().forEach((customizer) -> customizer.customize(builder));
+    return builder.build();
   }
 }

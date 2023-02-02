@@ -61,4 +61,24 @@ public class GSocketFrameCodec {
     byteBuf.resetReaderIndex();
     return slice;
   }
+
+  public static ByteBuf metadata(ByteBuf byteBuf) {
+    byteBuf.markReaderIndex();
+    byteBuf.skipBytes(3);
+    int metadataLength = length(byteBuf);
+    ByteBuf slice = byteBuf.readSlice(metadataLength);
+    byteBuf.resetReaderIndex();
+    return slice;
+  }
+
+  public static ByteBuf data(ByteBuf byteBuf) {
+    byteBuf.markReaderIndex();
+    int length = length(byteBuf);
+    byteBuf.skipBytes(3);
+    int metadataLength = length(byteBuf);
+    int dataLength = length - metadataLength;
+    ByteBuf slice = byteBuf.readSlice(dataLength);
+    byteBuf.resetReaderIndex();
+    return slice;
+  }
 }
