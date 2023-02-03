@@ -25,7 +25,7 @@ public class GSocketFrameCodec {
   public static final int FRAME_LENGTH_MASK = 0xFFFFFF;
   public static final int FRAME_LENGTH_SIZE = 3;
 
-  private static void encodeLength(final ByteBuf byteBuf, final int length) {
+  public static void encodeLength(final ByteBuf byteBuf, final int length) {
     if ((length & ~FRAME_LENGTH_MASK) != 0) {
       throw new IllegalArgumentException("Length is larger than 24 bits");
     }
@@ -65,7 +65,7 @@ public class GSocketFrameCodec {
   public static ByteBuf metadata(ByteBuf byteBuf) {
     byteBuf.markReaderIndex();
     byteBuf.skipBytes(3);
-    int metadataLength = length(byteBuf);
+    int metadataLength = decodeLength(byteBuf);
     ByteBuf slice = byteBuf.readSlice(metadataLength);
     byteBuf.resetReaderIndex();
     return slice;
@@ -73,11 +73,10 @@ public class GSocketFrameCodec {
 
   public static ByteBuf data(ByteBuf byteBuf) {
     byteBuf.markReaderIndex();
-    int length = length(byteBuf);
     byteBuf.skipBytes(3);
-    int metadataLength = length(byteBuf);
-    int dataLength = length - metadataLength;
-    ByteBuf slice = byteBuf.readSlice(dataLength);
+    int metadataLength = decodeLength(byteBuf);
+    byteBuf.skipBytes(metadataLength);
+    ByteBuf slice = byteBuf.slice();
     byteBuf.resetReaderIndex();
     return slice;
   }

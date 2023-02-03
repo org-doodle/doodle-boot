@@ -17,6 +17,7 @@ package org.doodle.boot.autoconfigure.gsocket;
 
 import org.doodle.boot.gsocket.messaging.GSocketMessageHandler;
 import org.doodle.boot.gsocket.messaging.GSocketMessageHandlerCustomizer;
+import org.doodle.boot.gsocket.messaging.GSocketPayloadDecoder;
 import org.doodle.boot.gsocket.messaging.GSocketStrategies;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -32,6 +33,7 @@ public class GSocketMessagingAutoConfiguration {
       GSocketStrategies strategies, ObjectProvider<GSocketMessageHandlerCustomizer> customizers) {
     GSocketMessageHandler messageHandler = new GSocketMessageHandler();
     messageHandler.setStrategies(strategies);
+    messageHandler.setPayloadDecoder(new GSocketPayloadDecoder.NettyDecoder());
     customizers.orderedStream().forEach(customizer -> customizer.customize(messageHandler));
     return messageHandler;
   }

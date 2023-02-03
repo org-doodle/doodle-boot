@@ -25,13 +25,11 @@ public class GSocketPayloadCodec {
 
   public static ByteBuf encode(ByteBufAllocator allocator, ByteBuf metadata, ByteBuf data) {
     ByteBuf body = encodeBody(allocator, metadata, data);
-    int length = GSocketFrameCodec.length(body);
-    return GSocketFrameCodec.encode(allocator, length, body);
+    return GSocketFrameCodec.encode(allocator, body.readableBytes(), body);
   }
 
   public static ByteBuf encodeBody(ByteBufAllocator allocator, ByteBuf metadata, ByteBuf data) {
-    int metadataLength = GSocketFrameCodec.length(metadata);
-    ByteBuf buf = GSocketFrameCodec.encode(allocator, metadataLength, metadata);
+    ByteBuf buf = GSocketFrameCodec.encode(allocator, metadata.readableBytes(), metadata);
     return allocator.compositeBuffer(2).addComponents(true, buf, data);
   }
 }

@@ -36,7 +36,9 @@ public interface GSocketPayloadDecoder extends Function<ByteBuf, GSocketPayload>
     @Override
     public GSocketPayload apply(ByteBuf byteBuf) {
       ByteBuf metadata = GSocketFrameCodec.metadata(byteBuf);
+      metadata.retain();
       ByteBuf data = GSocketFrameCodec.data(byteBuf);
+      data.retain();
       return NettyGSocketPayload.create(data, metadata);
     }
   }

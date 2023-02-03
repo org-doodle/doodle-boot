@@ -15,10 +15,12 @@
  */
 package org.doodle.boot.gsocket.messaging;
 
+import io.netty.buffer.PooledByteBufAllocator;
 import java.util.ArrayList;
 import java.util.List;
 import org.doodle.design.messaging.PacketStrategies;
 import org.springframework.core.codec.*;
+import org.springframework.core.io.buffer.NettyDataBufferFactory;
 
 public final class GSocketStrategiesBuilder implements PacketStrategies.Builder {
   private final List<Encoder<?>> encoders = new ArrayList<>();
@@ -39,6 +41,7 @@ public final class GSocketStrategiesBuilder implements PacketStrategies.Builder 
 
   @Override
   public GSocketStrategies build() {
-    return new GSocketStrategies(encoders, decoders, null, null);
+    return new GSocketStrategies(
+        encoders, decoders, new NettyDataBufferFactory(PooledByteBufAllocator.DEFAULT), null);
   }
 }

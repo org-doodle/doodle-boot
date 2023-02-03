@@ -18,6 +18,7 @@ package org.doodle.boot.gsocket.messaging;
 import io.netty.buffer.ByteBuf;
 import java.util.ArrayList;
 import java.util.List;
+import lombok.Setter;
 import org.doodle.boot.gsocket.netty.internal.ServerTransport;
 import org.doodle.design.messaging.reactive.PacketMappingMessageHandler;
 import org.springframework.core.codec.Encoder;
@@ -26,8 +27,11 @@ import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.core.io.buffer.NettyDataBuffer;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
+import org.springframework.messaging.handler.DestinationPatternsMessageCondition;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.messaging.support.MessageHeaderAccessor;
+import org.springframework.util.AntPathMatcher;
+import org.springframework.util.SimpleRouteMatcher;
 import reactor.core.publisher.Mono;
 
 public class GSocketMessageHandler extends PacketMappingMessageHandler {
@@ -36,7 +40,7 @@ public class GSocketMessageHandler extends PacketMappingMessageHandler {
 
   private GSocketStrategies strategies;
 
-  private GSocketPayloadDecoder payloadDecoder;
+  @Setter private GSocketPayloadDecoder payloadDecoder;
 
   public void setStrategies(GSocketStrategies strategies) {
     this.strategies = strategies;
@@ -70,11 +74,14 @@ public class GSocketMessageHandler extends PacketMappingMessageHandler {
                 DataBufferUtils.release(dataBuffer);
               }
             })
-        .block();
+        .subscribe();
   }
 
   private MessageHeaders createHeaders(GSocketPayload payload) {
     MessageHeaderAccessor header = new MessageHeaderAccessor();
+    header.setHeader(
+        DestinationPatternsMessageCondition.LOOKUP_DESTINATION_HEADER,
+        new SimpleRouteMatcher(new AntPathMatcher()).parseRoute("1.1"));
     return header.getMessageHeaders();
   }
 
