@@ -17,6 +17,7 @@ package org.doodle.boot.gsocket.messaging;
 
 import io.netty.buffer.PooledByteBufAllocator;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import org.doodle.design.messaging.PacketStrategies;
 import org.springframework.core.codec.*;
@@ -37,6 +38,18 @@ public final class GSocketStrategiesBuilder implements PacketStrategies.Builder 
     this.decoders.add(new ByteBufferDecoder());
     this.decoders.add(new ByteArrayDecoder());
     this.decoders.add(new DataBufferDecoder());
+  }
+
+  @Override
+  public GSocketStrategiesBuilder encoder(Encoder<?>... encoder) {
+    this.encoders.addAll(Arrays.asList(encoder));
+    return this;
+  }
+
+  @Override
+  public GSocketStrategiesBuilder decoder(Decoder<?>... decoder) {
+    this.decoders.addAll(Arrays.asList(decoder));
+    return this;
   }
 
   @Override

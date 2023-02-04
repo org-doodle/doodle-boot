@@ -31,6 +31,7 @@ import org.springframework.messaging.handler.DestinationPatternsMessageCondition
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.messaging.support.MessageHeaderAccessor;
 import org.springframework.util.AntPathMatcher;
+import org.springframework.util.MimeTypeUtils;
 import org.springframework.util.SimpleRouteMatcher;
 import reactor.core.publisher.Mono;
 
@@ -79,6 +80,8 @@ public class GSocketMessageHandler extends PacketMappingMessageHandler {
 
   private MessageHeaders createHeaders(GSocketPayload payload) {
     MessageHeaderAccessor header = new MessageHeaderAccessor();
+    header.setLeaveMutable(true);
+    header.setContentType(MimeTypeUtils.APPLICATION_JSON);
     header.setHeader(
         DestinationPatternsMessageCondition.LOOKUP_DESTINATION_HEADER,
         new SimpleRouteMatcher(new AntPathMatcher()).parseRoute("1.1"));

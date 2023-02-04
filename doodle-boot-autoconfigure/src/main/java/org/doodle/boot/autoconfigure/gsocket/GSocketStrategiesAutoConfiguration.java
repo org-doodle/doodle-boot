@@ -15,13 +15,19 @@
  */
 package org.doodle.boot.autoconfigure.gsocket;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.doodle.boot.gsocket.messaging.GSocketStrategies;
 import org.doodle.boot.gsocket.messaging.GSocketStrategiesBuilder;
 import org.doodle.boot.gsocket.messaging.GSocketStrategiesBuilderCustomizer;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
+import org.springframework.core.annotation.Order;
+import org.springframework.http.MediaType;
+import org.springframework.http.codec.json.Jackson2JsonDecoder;
+import org.springframework.http.codec.json.Jackson2JsonEncoder;
 
 @AutoConfiguration
 public class GSocketStrategiesAutoConfiguration {
@@ -33,5 +39,24 @@ public class GSocketStrategiesAutoConfiguration {
     GSocketStrategiesBuilder builder = new GSocketStrategiesBuilder();
     customizers.orderedStream().forEach((customizer) -> customizer.customize(builder));
     return builder.build();
+  }
+
+  @AutoConfiguration
+  @ConditionalOnClass(ObjectMapper.class)
+  protected static class JacksonJsonStrategyConfiguration {
+    private static final MediaType[] SUPPORTED_TYPES = {
+      MediaType.APPLICATION_JSON, new MediaType("application", "*+json")
+    };
+
+    @Bean
+    @Order(1)
+    @ConditionalOnClass(ObjectMapper.class)
+    public GSocketStrategiesBuilderCustomizer jacksonJsonRSocketStrategyCustomizer(
+        ObjectMapper objectMapper) {
+      return (strategy) -> {
+        strategy.decoder(new Jackson2JsonDecoder(objectMapper, SUPPORTED_TYPES));
+        strategy.encoder(new Jackson2JsonEncoder(objectMapper, SUPPORTED_TYPES));
+      };
+    }
   }
 }
