@@ -15,18 +15,22 @@
  */
 package org.doodle.boot.gsocket.messaging;
 
+import java.util.Collections;
 import java.util.List;
 import org.doodle.design.messaging.PacketMetadataExtractor;
 import org.doodle.design.messaging.PacketStrategies;
 import org.springframework.core.codec.Decoder;
 import org.springframework.core.codec.Encoder;
 import org.springframework.core.io.buffer.DataBufferFactory;
+import org.springframework.util.RouteMatcher;
 
 public class GSocketStrategies implements PacketStrategies {
 
   private final List<Encoder<?>> encoders;
 
   private final List<Decoder<?>> decoders;
+
+  private final RouteMatcher routeMatcher;
 
   private final DataBufferFactory dataBufferFactory;
 
@@ -35,10 +39,12 @@ public class GSocketStrategies implements PacketStrategies {
   GSocketStrategies(
       List<Encoder<?>> encoders,
       List<Decoder<?>> decoders,
+      RouteMatcher routeMatcher,
       DataBufferFactory dataBufferFactory,
       PacketMetadataExtractor metadataExtractor) {
-    this.encoders = encoders;
-    this.decoders = decoders;
+    this.encoders = Collections.unmodifiableList(encoders);
+    this.decoders = Collections.unmodifiableList(decoders);
+    this.routeMatcher = routeMatcher;
     this.dataBufferFactory = dataBufferFactory;
     this.metadataExtractor = metadataExtractor;
   }
@@ -51,6 +57,11 @@ public class GSocketStrategies implements PacketStrategies {
   @Override
   public List<Decoder<?>> decoders() {
     return this.decoders;
+  }
+
+  @Override
+  public RouteMatcher routeMatcher() {
+    return this.routeMatcher;
   }
 
   @Override

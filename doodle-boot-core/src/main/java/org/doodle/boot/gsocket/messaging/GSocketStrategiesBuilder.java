@@ -19,14 +19,22 @@ import io.netty.buffer.PooledByteBufAllocator;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
+import org.doodle.design.messaging.PacketMetadataExtractor;
 import org.doodle.design.messaging.PacketStrategies;
 import org.springframework.core.codec.*;
+import org.springframework.core.io.buffer.DataBufferFactory;
 import org.springframework.core.io.buffer.NettyDataBufferFactory;
+import org.springframework.util.AntPathMatcher;
+import org.springframework.util.RouteMatcher;
+import org.springframework.util.SimpleRouteMatcher;
 
 public final class GSocketStrategiesBuilder implements PacketStrategies.Builder {
   private final List<Encoder<?>> encoders = new ArrayList<>();
-
   private final List<Decoder<?>> decoders = new ArrayList<>();
+  private RouteMatcher routeMatcher;
+  private DataBufferFactory dataBufferFactory;
+  private PacketMetadataExtractor metadataExtractor;
 
   public GSocketStrategiesBuilder() {
     this.encoders.add(CharSequenceEncoder.allMimeTypes());
@@ -53,11 +61,45 @@ public final class GSocketStrategiesBuilder implements PacketStrategies.Builder 
   }
 
   @Override
+  public GSocketStrategiesBuilder routeMatcher(RouteMatcher routeMatcher) {
+    this.routeMatcher = routeMatcher;
+    return this;
+  }
+
+  @Override
+  public GSocketStrategiesBuilder dataBufferFactory(DataBufferFactory dataBufferFactory) {
+    this.dataBufferFactory = dataBufferFactory;
+    return this;
+  }
+
+  @Override
+  public GSocketStrategiesBuilder metadataExtractor(PacketMetadataExtractor metadataExtractor) {
+    this.metadataExtractor = metadataExtractor;
+    return this;
+  }
+
+  @Override
   public GSocketStrategies build() {
+    RouteMatcher routeMatcher =
+        Objects.nonNull(this.routeMatcher) ? this.routeMatcher : initRouteMatcher();
+
+    DataBufferFactory dataBufferFactory =
+        Objects.nonNull(this.dataBufferFactory)
+            ? this.dataBufferFactory
+            : new NettyDataBufferFactory(PooledByteBufAllocator.DEFAULT);
+
+    PacketMetadataExtractor metadataExtractor =
+        Objects.nonNull(this.metadataExtractor)
+            ? this.metadataExtractor
+            : new GSocketMetadataExtractor();
+
     return new GSocketStrategies(
-        encoders,
-        decoders,
-        new NettyDataBufferFactory(PooledByteBufAllocator.DEFAULT),
-        new GSocketMetadataExtractor());
+        encoders, decoders, routeMatcher, dataBufferFactory, metadataExtractor);
+  }
+
+  private RouteMatcher initRouteMatcher() {
+    AntPathMatcher pathMatcher = new AntPathMatcher();
+    pathMatcher.setPathSeparator(".");
+    return new SimpleRouteMatcher(pathMatcher);
   }
 }

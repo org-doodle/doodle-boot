@@ -15,6 +15,7 @@
  */
 package org.doodle.boot.gsocket.messaging;
 
+@FunctionalInterface
 public interface GSocketStrategiesBuilderCustomizer {
   void customize(GSocketStrategiesBuilder builder);
 }

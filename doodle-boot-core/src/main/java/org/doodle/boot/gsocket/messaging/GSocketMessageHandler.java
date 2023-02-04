@@ -32,9 +32,8 @@ import org.springframework.messaging.MessageHeaders;
 import org.springframework.messaging.handler.DestinationPatternsMessageCondition;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.messaging.support.MessageHeaderAccessor;
-import org.springframework.util.AntPathMatcher;
 import org.springframework.util.MimeTypeUtils;
-import org.springframework.util.SimpleRouteMatcher;
+import org.springframework.util.RouteMatcher;
 import reactor.core.publisher.Mono;
 
 public class GSocketMessageHandler extends PacketMappingMessageHandler {
@@ -89,10 +88,10 @@ public class GSocketMessageHandler extends PacketMappingMessageHandler {
     metadataValues.putIfAbsent(PacketMetadataExtractor.ROUTE_KEY, "");
     header.setContentType(MimeTypeUtils.APPLICATION_JSON);
     for (Map.Entry<String, Object> entry : metadataValues.entrySet()) {
+      RouteMatcher.Route route =
+          this.strategies.routeMatcher().parseRoute((String) entry.getValue());
       if (entry.getKey().equals(PacketMetadataExtractor.ROUTE_KEY)) {
-        header.setHeader(
-            DestinationPatternsMessageCondition.LOOKUP_DESTINATION_HEADER,
-            new SimpleRouteMatcher(new AntPathMatcher()).parseRoute("1.1"));
+        header.setHeader(DestinationPatternsMessageCondition.LOOKUP_DESTINATION_HEADER, route);
       } else {
         header.setHeader(entry.getKey(), entry.getValue());
       }
