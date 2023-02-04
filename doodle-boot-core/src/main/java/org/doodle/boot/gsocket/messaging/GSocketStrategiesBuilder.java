@@ -55,6 +55,9 @@ public final class GSocketStrategiesBuilder implements PacketStrategies.Builder 
   @Override
   public GSocketStrategies build() {
     return new GSocketStrategies(
-        encoders, decoders, new NettyDataBufferFactory(PooledByteBufAllocator.DEFAULT), null);
+        encoders,
+        decoders,
+        new NettyDataBufferFactory(PooledByteBufAllocator.DEFAULT),
+        new GSocketMetadataExtractor());
   }
 }

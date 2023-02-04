@@ -18,8 +18,10 @@ package org.doodle.boot.gsocket.messaging;
 import io.netty.buffer.ByteBuf;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import lombok.Setter;
 import org.doodle.boot.gsocket.netty.internal.ServerTransport;
+import org.doodle.design.messaging.PacketMetadataExtractor;
 import org.doodle.design.messaging.reactive.PacketMappingMessageHandler;
 import org.springframework.core.codec.Encoder;
 import org.springframework.core.io.buffer.DataBuffer;
@@ -81,10 +83,20 @@ public class GSocketMessageHandler extends PacketMappingMessageHandler {
   private MessageHeaders createHeaders(GSocketPayload payload) {
     MessageHeaderAccessor header = new MessageHeaderAccessor();
     header.setLeaveMutable(true);
+
+    Map<String, Object> metadataValues =
+        this.strategies.metadataExtractor().extract(payload, MimeTypeUtils.APPLICATION_JSON);
+    metadataValues.putIfAbsent(PacketMetadataExtractor.ROUTE_KEY, "");
     header.setContentType(MimeTypeUtils.APPLICATION_JSON);
-    header.setHeader(
-        DestinationPatternsMessageCondition.LOOKUP_DESTINATION_HEADER,
-        new SimpleRouteMatcher(new AntPathMatcher()).parseRoute("1.1"));
+    for (Map.Entry<String, Object> entry : metadataValues.entrySet()) {
+      if (entry.getKey().equals(PacketMetadataExtractor.ROUTE_KEY)) {
+        header.setHeader(
+            DestinationPatternsMessageCondition.LOOKUP_DESTINATION_HEADER,
+            new SimpleRouteMatcher(new AntPathMatcher()).parseRoute("1.1"));
+      } else {
+        header.setHeader(entry.getKey(), entry.getValue());
+      }
+    }
     return header.getMessageHeaders();
   }
 
