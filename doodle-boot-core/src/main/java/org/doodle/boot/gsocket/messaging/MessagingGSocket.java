@@ -86,7 +86,6 @@ class MessagingGSocket {
     Map<String, Object> metadataValues =
         this.strategies.metadataExtractor().extract(payload, metadataMimeType);
     metadataValues.putIfAbsent(PacketMetadataExtractor.ROUTE_KEY, "");
-    header.setContentType(dataMimeType);
     for (Map.Entry<String, Object> entry : metadataValues.entrySet()) {
       RouteMatcher.Route route =
           this.strategies.routeMatcher().parseRoute((String) entry.getValue());
@@ -96,6 +95,8 @@ class MessagingGSocket {
         header.setHeader(entry.getKey(), entry.getValue());
       }
     }
+    header.setContentType(dataMimeType);
+    header.setHeader(GSocketRequesterMethodArgumentResolver.REQUESTER_HEADER, this.requester);
     return header.getMessageHeaders();
   }
 
