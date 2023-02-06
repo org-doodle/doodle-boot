@@ -15,32 +15,27 @@
  */
 package org.doodle.boot.gsocket.messaging;
 
-import io.netty.buffer.ByteBuf;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+import lombok.Getter;
 import lombok.Setter;
+import org.doodle.boot.gsocket.netty.NettyGSocketPacketSocket;
 import org.doodle.boot.gsocket.netty.internal.ServerTransport;
-import org.doodle.design.messaging.PacketMetadataExtractor;
 import org.doodle.design.messaging.reactive.PacketMappingMessageHandler;
 import org.springframework.core.codec.Encoder;
-import org.springframework.core.io.buffer.DataBuffer;
-import org.springframework.core.io.buffer.DataBufferUtils;
-import org.springframework.core.io.buffer.NettyDataBuffer;
-import org.springframework.messaging.Message;
-import org.springframework.messaging.MessageHeaders;
-import org.springframework.messaging.handler.DestinationPatternsMessageCondition;
-import org.springframework.messaging.support.MessageBuilder;
-import org.springframework.messaging.support.MessageHeaderAccessor;
+import org.springframework.util.MimeType;
 import org.springframework.util.MimeTypeUtils;
-import org.springframework.util.RouteMatcher;
 import reactor.core.publisher.Mono;
 
 public class GSocketMessageHandler extends PacketMappingMessageHandler {
 
-  private final List<Encoder<?>> encoders = new ArrayList<>();
+  @Getter private final List<Encoder<?>> encoders = new ArrayList<>();
 
-  private GSocketStrategies strategies;
+  private GSocketStrategies strategies = new GSocketStrategiesBuilder().build();
+
+  @Setter private MimeType dataMimeType = MimeTypeUtils.APPLICATION_JSON;
+
+  @Setter private MimeType metadataMimeType = MimeTypeUtils.APPLICATION_JSON;
 
   @Setter private GSocketPayloadDecoder payloadDecoder;
 
@@ -51,57 +46,30 @@ public class GSocketMessageHandler extends PacketMappingMessageHandler {
     super.setDecoders(this.strategies.decoders());
   }
 
+  @Override
+  public void afterPropertiesSet() {
+    getArgumentResolverConfigurer().addCustomResolver(new GSocketRequesterMethodArgumentResolver());
+    super.afterPropertiesSet();
+  }
+
   public ServerTransport.ConnectionAcceptor responder() {
     return connection -> {
-      connection
-          .inbound()
-          .receiveObject()
-          .cast(ByteBuf.class)
-          .map(payloadDecoder::apply)
-          .subscribe(this::onReceivePayload);
-      return Mono.never();
+      GSocketRequester requester =
+          GSocketRequester.wrap(
+              new NettyGSocketPacketSocket(connection),
+              this.dataMimeType,
+              this.metadataMimeType,
+              this.strategies);
+      MessagingGSocket responder =
+          new MessagingGSocket(
+              connection,
+              this,
+              this.dataMimeType,
+              this.metadataMimeType,
+              this.strategies,
+              this.payloadDecoder,
+              requester);
+      return Mono.just(responder).then();
     };
-  }
-
-  private void onReceivePayload(GSocketPayload payload) {
-    MessageHeaders header = createHeaders(payload);
-    DataBuffer dataBuffer =
-        GSocketPayloadUtils.retainDataAndReleasePayload(payload, strategies.dataBufferFactory());
-    int refCount = refCount(dataBuffer);
-    Message<?> message = MessageBuilder.createMessage(dataBuffer, header);
-    Mono.defer(() -> handleMessage(message))
-        .doFinally(
-            s -> {
-              if (refCount(dataBuffer) == refCount) {
-                DataBufferUtils.release(dataBuffer);
-              }
-            })
-        .subscribe();
-  }
-
-  private MessageHeaders createHeaders(GSocketPayload payload) {
-    MessageHeaderAccessor header = new MessageHeaderAccessor();
-    header.setLeaveMutable(true);
-
-    Map<String, Object> metadataValues =
-        this.strategies.metadataExtractor().extract(payload, MimeTypeUtils.APPLICATION_JSON);
-    metadataValues.putIfAbsent(PacketMetadataExtractor.ROUTE_KEY, "");
-    header.setContentType(MimeTypeUtils.APPLICATION_JSON);
-    for (Map.Entry<String, Object> entry : metadataValues.entrySet()) {
-      RouteMatcher.Route route =
-          this.strategies.routeMatcher().parseRoute((String) entry.getValue());
-      if (entry.getKey().equals(PacketMetadataExtractor.ROUTE_KEY)) {
-        header.setHeader(DestinationPatternsMessageCondition.LOOKUP_DESTINATION_HEADER, route);
-      } else {
-        header.setHeader(entry.getKey(), entry.getValue());
-      }
-    }
-    return header.getMessageHeaders();
-  }
-
-  private int refCount(DataBuffer dataBuffer) {
-    return dataBuffer instanceof NettyDataBuffer
-        ? ((NettyDataBuffer) dataBuffer).getNativeBuffer().refCnt()
-        : 1;
   }
 }
