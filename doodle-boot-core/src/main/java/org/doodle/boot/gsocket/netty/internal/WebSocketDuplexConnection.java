@@ -15,17 +15,24 @@
  */
 package org.doodle.boot.gsocket.netty.internal;
 
-import java.util.function.Function;
-import org.reactivestreams.Publisher;
-import reactor.core.publisher.Mono;
-import reactor.netty.DisposableServer;
+import io.netty.buffer.ByteBuf;
+import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
+import reactor.core.publisher.Flux;
+import reactor.netty.Connection;
 
-public interface ServerTransport extends Transport {
+public class WebSocketDuplexConnection extends BaseDuplexConnection {
 
-  Mono<? extends DisposableServer> start(ConnectionAcceptor acceptor);
+  public WebSocketDuplexConnection(Connection connection) {
+    super(connection);
+    this.connection
+        .outbound()
+        .sendObject(sender.asFlux().map(BinaryWebSocketFrame::new))
+        .then()
+        .subscribe();
+  }
 
-  interface ConnectionAcceptor extends Function<DuplexConnection, Publisher<Void>> {
-    @Override
-    Mono<Void> apply(DuplexConnection connection);
+  @Override
+  public Flux<ByteBuf> receive() {
+    return this.connection.inbound().receive();
   }
 }

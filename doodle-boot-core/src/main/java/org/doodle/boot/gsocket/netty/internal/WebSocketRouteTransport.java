@@ -53,6 +53,9 @@ public class WebSocketRouteTransport extends BaseWebsocketServerTransport<WebSoc
 
   public static BiFunction<WebsocketInbound, WebsocketOutbound, Publisher<Void>> newHandler(
       ConnectionAcceptor acceptor) {
-    return (in, out) -> acceptor.apply((Connection) in).then(out.neverComplete());
+    return (inbound, outbound) ->
+        acceptor
+            .apply(new WebSocketDuplexConnection((Connection) inbound))
+            .then(outbound.neverComplete());
   }
 }

@@ -16,27 +16,22 @@
 package org.doodle.boot.gsocket.netty;
 
 import org.doodle.boot.gsocket.messaging.GSocketPayloadCodec;
+import org.doodle.boot.gsocket.netty.internal.DuplexConnection;
 import org.doodle.design.messaging.PacketPayload;
 import org.doodle.design.messaging.PacketSocket;
-import reactor.core.publisher.Mono;
-import reactor.netty.Connection;
 
 public class NettyGSocketPacketSocket implements PacketSocket {
 
-  private final Connection connection;
+  private final DuplexConnection connection;
 
-  public NettyGSocketPacketSocket(Connection connection) {
+  public NettyGSocketPacketSocket(DuplexConnection connection) {
     this.connection = connection;
   }
 
   @Override
-  public Mono<Void> send(PacketPayload payload) {
-    return connection
-        .outbound()
-        .sendObject(
-            GSocketPayloadCodec.encode(
-                connection.channel().alloc(), payload.metadata(), payload.data()))
-        .then();
+  public void send(PacketPayload payload) {
+    this.connection.sendFrame(
+        GSocketPayloadCodec.encode(connection.alloc(), payload.metadata(), payload.data()));
   }
 
   @Override

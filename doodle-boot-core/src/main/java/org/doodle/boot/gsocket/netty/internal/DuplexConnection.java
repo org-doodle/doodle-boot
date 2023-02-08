@@ -15,17 +15,19 @@
  */
 package org.doodle.boot.gsocket.netty.internal;
 
-import java.util.function.Function;
-import org.reactivestreams.Publisher;
-import reactor.core.publisher.Mono;
-import reactor.netty.DisposableServer;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
+import java.net.SocketAddress;
+import reactor.core.Disposable;
+import reactor.core.publisher.Flux;
 
-public interface ServerTransport extends Transport {
+public interface DuplexConnection extends Disposable {
 
-  Mono<? extends DisposableServer> start(ConnectionAcceptor acceptor);
+  void sendFrame(ByteBuf byteBuf);
 
-  interface ConnectionAcceptor extends Function<DuplexConnection, Publisher<Void>> {
-    @Override
-    Mono<Void> apply(DuplexConnection connection);
-  }
+  Flux<ByteBuf> receive();
+
+  ByteBufAllocator alloc();
+
+  SocketAddress remoteAddress();
 }

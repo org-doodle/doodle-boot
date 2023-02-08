@@ -115,7 +115,7 @@ public final class GSocketRequester implements PacketRequester {
 
     @Override
     public Mono<Void> send() {
-      return packetSocket.send(payloadMono.block());
+      return this.payloadMono.doOnNext(packetSocket::send).then();
     }
   }
 }

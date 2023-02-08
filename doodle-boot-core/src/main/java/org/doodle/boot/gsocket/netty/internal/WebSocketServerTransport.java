@@ -53,7 +53,9 @@ public class WebSocketServerTransport extends BaseWebsocketServerTransport<WebSo
               response.headers(headers);
               return response.sendWebsocket(
                   (inbound, outbound) ->
-                      acceptor.apply((Connection) inbound).then(outbound.neverComplete()),
+                      acceptor
+                          .apply(new WebSocketDuplexConnection((Connection) inbound))
+                          .then(outbound.neverComplete()),
                   specBuilder.build());
             })
         .bind();

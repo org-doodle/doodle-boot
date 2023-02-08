@@ -15,8 +15,8 @@
  */
 package org.doodle.boot.gsocket.messaging;
 
-import io.netty.buffer.ByteBuf;
 import java.util.Map;
+import org.doodle.boot.gsocket.netty.internal.DuplexConnection;
 import org.doodle.design.messaging.PacketMetadataExtractor;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferUtils;
@@ -29,11 +29,10 @@ import org.springframework.messaging.support.MessageHeaderAccessor;
 import org.springframework.util.MimeType;
 import org.springframework.util.RouteMatcher;
 import reactor.core.publisher.Mono;
-import reactor.netty.Connection;
 
 class MessagingGSocket {
 
-  private final Connection connection;
+  private final DuplexConnection connection;
   private final MimeType dataMimeType;
   private final MimeType metadataMimeType;
   private final GSocketMessageHandler messageHandler;
@@ -41,7 +40,7 @@ class MessagingGSocket {
   private final GSocketRequester requester;
 
   MessagingGSocket(
-      Connection connection,
+      DuplexConnection connection,
       GSocketMessageHandler messageHandler,
       MimeType dataMimeType,
       MimeType metadataMimeType,
@@ -55,12 +54,7 @@ class MessagingGSocket {
     this.strategies = strategies;
     this.requester = requester;
 
-    this.connection
-        .inbound()
-        .receiveObject()
-        .cast(ByteBuf.class)
-        .map(payloadDecoder::apply)
-        .subscribe(this::onReceivePayload);
+    this.connection.receive().map(payloadDecoder::apply).subscribe(this::onReceivePayload);
   }
 
   private void onReceivePayload(GSocketPayload payload) {

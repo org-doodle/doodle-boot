@@ -44,7 +44,10 @@ public class TcpServerTransport implements ServerTransport {
         .doOnConnection(
             (c) -> {
               c.addHandlerLast(new GSocketLengthCodec(maxFrameLength));
-              acceptor.apply(c).then(Mono.<Void>never()).subscribe(c.disposeSubscriber());
+              acceptor
+                  .apply(new TcpDuplexConnection(c))
+                  .then(Mono.<Void>never())
+                  .subscribe(c.disposeSubscriber());
             })
         .bind();
   }
