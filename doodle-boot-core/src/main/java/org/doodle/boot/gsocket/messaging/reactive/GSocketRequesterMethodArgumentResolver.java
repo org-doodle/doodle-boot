@@ -13,8 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.doodle.boot.gsocket.messaging;
+package org.doodle.boot.gsocket.messaging.reactive;
 
+import static org.doodle.design.messaging.reactive.PacketRequesterMethodArgumentResolver.PACKET_REQUESTER_HEADER;
+
+import org.doodle.boot.gsocket.messaging.GSocketRequester;
 import org.springframework.core.MethodParameter;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.handler.invocation.reactive.HandlerMethodArgumentResolver;
@@ -22,8 +25,6 @@ import org.springframework.util.Assert;
 import reactor.core.publisher.Mono;
 
 public class GSocketRequesterMethodArgumentResolver implements HandlerMethodArgumentResolver {
-
-  public static final String REQUESTER_HEADER = "requestHeader";
 
   @Override
   public boolean supportsParameter(MethodParameter parameter) {
@@ -33,13 +34,13 @@ public class GSocketRequesterMethodArgumentResolver implements HandlerMethodArgu
 
   @Override
   public Mono<Object> resolveArgument(MethodParameter parameter, Message<?> message) {
-    Object headerValue = message.getHeaders().get(REQUESTER_HEADER);
-    Assert.notNull(headerValue, "Missing '" + REQUESTER_HEADER + "'");
+    Object headerValue = message.getHeaders().get(PACKET_REQUESTER_HEADER);
+    Assert.notNull(headerValue, "Missing '" + PACKET_REQUESTER_HEADER + "'");
     Assert.isInstanceOf(
         GSocketRequester.class, headerValue, "Expect header value of type GSocketRequester");
     GSocketRequester requester = (GSocketRequester) headerValue;
     Class<?> type = parameter.getParameterType();
-    if (GSocketRequester.class.equals(type)) {
+    if (GSocketRequester.class.equals(type) || GSocketRequester.class.isAssignableFrom(type)) {
       return Mono.just(requester);
     } else {
       return Mono.error(new IllegalArgumentException("Unexpected parameter type: " + parameter));

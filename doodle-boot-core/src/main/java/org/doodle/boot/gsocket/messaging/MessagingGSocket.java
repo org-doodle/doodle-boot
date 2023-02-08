@@ -18,6 +18,7 @@ package org.doodle.boot.gsocket.messaging;
 import java.util.Map;
 import org.doodle.boot.gsocket.netty.internal.DuplexConnection;
 import org.doodle.design.messaging.PacketMetadataExtractor;
+import org.doodle.design.messaging.reactive.PacketRequesterMethodArgumentResolver;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.core.io.buffer.NettyDataBuffer;
@@ -31,7 +32,6 @@ import org.springframework.util.RouteMatcher;
 import reactor.core.publisher.Mono;
 
 class MessagingGSocket {
-
   private final DuplexConnection connection;
   private final MimeType dataMimeType;
   private final MimeType metadataMimeType;
@@ -90,7 +90,7 @@ class MessagingGSocket {
       }
     }
     header.setContentType(dataMimeType);
-    header.setHeader(GSocketRequesterMethodArgumentResolver.REQUESTER_HEADER, this.requester);
+    header.setHeader(PacketRequesterMethodArgumentResolver.PACKET_REQUESTER_HEADER, this.requester);
     return header.getMessageHeaders();
   }
 

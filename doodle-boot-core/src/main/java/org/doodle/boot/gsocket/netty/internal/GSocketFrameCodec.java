@@ -64,7 +64,6 @@ public class GSocketFrameCodec {
 
   public static ByteBuf metadata(ByteBuf byteBuf) {
     byteBuf.markReaderIndex();
-    byteBuf.skipBytes(3);
     int metadataLength = decodeLength(byteBuf);
     ByteBuf slice = byteBuf.readSlice(metadataLength);
     byteBuf.resetReaderIndex();

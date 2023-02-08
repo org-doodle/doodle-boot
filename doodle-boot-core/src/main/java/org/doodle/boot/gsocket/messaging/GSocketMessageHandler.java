@@ -19,9 +19,11 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
+import org.doodle.boot.gsocket.messaging.reactive.GSocketRequesterMethodArgumentResolver;
 import org.doodle.boot.gsocket.netty.NettyGSocketPacketSocket;
 import org.doodle.boot.gsocket.netty.internal.ServerTransport;
 import org.doodle.design.messaging.reactive.PacketMappingMessageHandler;
+import org.doodle.design.messaging.reactive.PacketPayloadReturnValueHandler;
 import org.springframework.core.codec.Encoder;
 import org.springframework.util.MimeType;
 import org.springframework.util.MimeTypeUtils;
@@ -49,6 +51,9 @@ public class GSocketMessageHandler extends PacketMappingMessageHandler {
   @Override
   public void afterPropertiesSet() {
     getArgumentResolverConfigurer().addCustomResolver(new GSocketRequesterMethodArgumentResolver());
+    getReturnValueHandlerConfigurer()
+        .addCustomHandler(
+            new PacketPayloadReturnValueHandler(this.encoders, getReactiveAdapterRegistry()));
     super.afterPropertiesSet();
   }
 
