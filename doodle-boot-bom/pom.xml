@@ -15,7 +15,7 @@
   <packaging>pom</packaging>
   <properties>
     <doodle-design.version>0.0.1-SNAPSHOT</doodle-design.version>
-    <protobuf.version>3.21.12</protobuf.version>
+    <guava.version>31.1-jre</guava.version>
   </properties>
   <dependencyManagement>
     <dependencies>
@@ -27,9 +27,9 @@
         <scope>import</scope>
       </dependency>
       <dependency>
-        <groupId>com.google.protobuf</groupId>
-        <artifactId>protobuf-java</artifactId>
-        <version>${protobuf.version}</version>
+        <groupId>com.google.guava</groupId>
+        <artifactId>guava</artifactId>
+        <version>${guava.version}</version>
       </dependency>
       <dependency>
         <groupId>org.doodle</groupId>
